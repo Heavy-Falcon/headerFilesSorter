@@ -1,7 +1,7 @@
-#include <algorithm>
+#include <algorithm>  // sort()
 #include <fstream>
 #include <iostream>
-#include <unistd.h>
+#include <unistd.h>  // access()
 #include <vector>
 
 using namespace std;
@@ -16,22 +16,26 @@ void handle(char* filename, int u) {
 	inFile.open(filename);
 	int start = -1, cnt = 0;
 	string cur;
-	vector<string> includes, other;
+	vector<string> includesOfQuotes, includesOfAngleBrackets, other;
 	while (getline(inFile, cur)) {
-		if (cur.substr(0, 8) == "#include") {
-			includes.push_back(cur);
+		if (cur.substr(0, 10) == "#include <") {
+			includesOfAngleBrackets.push_back(cur);
 			if (start == -1) start = cnt;
-		}
-		else other.push_back(cur);
+		} else if (cur.substr(0, 10) == "#include \"") {
+            includesOfQuotes.push_back(cur);
+            if (start == -1) start = cnt;
+		} else other.push_back(cur);
 		cnt ++ ;
 	}
-	sort(includes.begin(), includes.end());
+	sort(includesOfQuotes.begin(), includesOfQuotes.end());
+    sort(includesOfAngleBrackets.begin(), includesOfAngleBrackets.end());
 	inFile.close();
 
 	ofstream outFile;
 	outFile.open(filename);
 	for (int i = 0; i < start; i ++ ) outFile << other[i] << endl;
-	for (string s: includes) outFile << s << endl;
+	for (string s: includesOfAngleBrackets) outFile << s << endl;
+	for (string s: includesOfQuotes) outFile << s << endl;
 	for (int i = start; i < other.size(); i ++ ) outFile << other[i] << endl;
 	outFile.close();
 }
